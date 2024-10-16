@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1> Welcome Admin</h1>
+    
+    <h3> Approval Request</h3>
+    {% for i in apvals%}
+    <form action="/AdminDashbord" method="post">
+        {{i.name}}
+        <input type="text" name='ID' value={{i.id}} hidden>
+        <input type="radio" name="Status"  value="True"><label>Approve</label>
+        <input type="radio" name="Status"  value="False"><label>Reject</label>
+        <input type="submit">
+    </form>
+    <br>
+    {%endfor%}
+</body>
+</html>
