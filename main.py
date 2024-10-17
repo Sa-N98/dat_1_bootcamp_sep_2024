@@ -13,6 +13,7 @@ os.path.join(current_dir,"Database.sqlite3")
 db.init_app(app)
 app.app_context().push() # stack in pograming
 
+
 @app.route('/', methods=['GET','POST']) #192.168.0.117:5000 = /
 def home():
     if request.method == "POST":
@@ -23,13 +24,20 @@ def home():
         user = users.query.filter_by(email = Email).first()
         if user:
             if Password == user.password:
+
+
+
+
                 if user.user_type == "Theater":
                     relation = User_theater_relation.query.filter_by(user_id =user.id).first()
                     theater = theaters.query.filter_by(id = relation.theater_id).first()
 
                     if theater.status == False:
                         return "You are not verified yet"
-                    return redirect(url_for("Theater_dashbord"))
+                    return redirect(url_for("Theater_dashbord" , id=user.id))
+                
+
+
                 elif user.user_type == "Customer":
                     return redirect(url_for("customer_dashbord"))
                 elif user.user_type == "Admin":
@@ -82,6 +90,16 @@ def TheaterSignUp():
          new_relation =User_theater_relation(user_id = newUser.id , theater_id=newTheater.id)
          db.session.add(new_relation)
          db.session.commit()
+         
+
+
+
+
+         
+         
+
+
+
 
 
 
@@ -103,9 +121,12 @@ def customer_dashbord():
 
 
 
-@app.route('/TheaterDashbord', methods=['GET','POST']) 
-def Theater_dashbord():
-    return rt('ServerDashbord.html')
+@app.route('/TheaterDashbord/<id>', methods=['GET','POST']) 
+def Theater_dashbord(id):
+
+    theaterdata= theaters.query.filter_by(id = id ).first()
+    print( theaterdata.hosted_movies)
+    return rt('ServerDashbord.html', Tid=id , movie_data = theaterdata.hosted_movies)
 
 
 
@@ -129,6 +150,39 @@ def Admin_dashbord():
 
     return rt('AdminDashbord.html', apvals = approvals )
 
+
+@app.route('/submit_movie', methods=['GET','POST'])
+def submit_movie():
+
+    if request.method == "POST":
+        movie_name = request.form['name']
+        genre = request.form['genre']
+        poster_url = request.form['poster']
+        ticket_price = int(request.form['price'])
+        available_tickets = int(request.form['tickets'])
+        event_date = request.form['date']
+        event_time = request.form['time']
+        theaterID = request.form['theater']
+
+        new_movie = movies(
+                            name=movie_name,
+                            genre=genre,
+                            poster=poster_url,
+                            price=ticket_price,
+                            tickets=available_tickets,
+                            date=event_date,
+                            time=event_time
+                        )
+        
+        db.session.add(new_movie)
+        db.session.commit()
+
+        newRelation = Movies_theater_relation(movie_id =new_movie.id ,  theater_id = theaterID)
+        db.session.add(newRelation)
+        db.session.commit()
+
+
+        return redirect(url_for("Theater_dashbord" , id=theaterID))
 
 
 
